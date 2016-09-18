@@ -30,11 +30,11 @@ class GameLoopSession(ApplicationSession):
 
         def ret(event):
             t = 'com.game.rooms.0.0'
-            print('returning %s on %s' % (event['msg'], t))
-            print(self.publish(t, event['msg'], x=1))
+            #print('returning %s on %s' % (event['msg'], t))
+            self.publish(t, event['msg'])
 
         while True:
             for event in events:
                 ret(event)
             events = []
-            yield sleep(1/16)
+            yield sleep(1/60)

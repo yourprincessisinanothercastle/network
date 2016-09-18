@@ -52,7 +52,6 @@ connection.onopen = function(session, details) {
   connected = true;
   s = session;
   console.log(session.subscribe('com.game.rooms.0.0', function(args, kwargs, details) {
-    console.log('incoming event...: ' + args);
     incoming_events.push({
       args: args,
       kwargs: kwargs,
@@ -85,7 +84,6 @@ console.log('connecting to ' + wsuri);
 connection.open();
 
 append_event = function(event) {
-  console.log('adding ' + event);
   return events.push(event);
 };
 

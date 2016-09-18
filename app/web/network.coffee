@@ -52,7 +52,7 @@ connection.onopen = (session, details) ->
     s = session
     console.log(session.subscribe('com.game.rooms.0.0',
         (args, kwargs, details) ->
-            console.log('incoming event...: ' + args)
+            #console.log('incoming event...: ' + args)
             incoming_events.push({args, kwargs, details})
             return))
     return
@@ -76,7 +76,7 @@ console.log('connecting to ' + wsuri)
 connection.open()
 
 append_event = (event) ->
-    console.log('adding ' +  event)
+    #console.log('adding ' +  event)
     events.push(event)
     
 
