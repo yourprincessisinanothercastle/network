@@ -4,6 +4,7 @@ this uses crossbar.io
 
 ```
 pip install crossbar
+cd app
 crossbar start
 ```
 
