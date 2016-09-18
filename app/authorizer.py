@@ -17,9 +17,14 @@ class UserAuthorizer(ApplicationSession):
             {
                 "action": 'publish',
                 "uri": "com.game.events.%s" % session['authid']
+            },
+            {
+                "action": 'subscribe',
+                "uri": "com.game.rooms.0.0"
             }
         ]
         for rule in allowed:
             if action == rule['action'] and uri == rule['uri']:
+                print('allowing %s %s for %s' % (action, uri, session['authid']))
                 return True
         return False

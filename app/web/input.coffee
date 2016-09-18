@@ -41,6 +41,8 @@ onPaint = () ->
       'y': mouse.y
     }
   })
-  #ctx.lineTo(mouse.x, mouse.y)
-  #ctx.stroke()
+
+draw = (x, y) ->
+  ctx.lineTo(x, y)
+  ctx.stroke()
 

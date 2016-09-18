@@ -8,7 +8,7 @@ connected = false
 s = false
 
 events = []
-
+incoming_events = []
 
 onchallenge = (session, method, extra) ->
         #console.log("onchallenge", method, extra);
@@ -41,6 +41,8 @@ connection = new autobahn.Connection({
     onchallenge: onchallenge
 });
 
+
+
 connection.onopen = (session, details) ->
 
     console.log("connected session with ID " + session.id);
@@ -48,11 +50,12 @@ connection.onopen = (session, details) ->
     console.log("authenticated with authid '" + details.authid + "' and authrole '" + details.authrole + "'");
     connected = true
     s = session
-
-    send({
-        't': 'chat',  # type
-        'p': 'hey!'   # payload
-    })
+    console.log(session.subscribe('com.game.rooms.0.0',
+        (args, kwargs, details) ->
+            console.log('incoming event...: ' + args)
+            incoming_events.push({args, kwargs, details})
+            return))
+    return
 
 connection.onclose = (reason, details) ->
     console.log("disconnected", reason, details.reason, details);
@@ -75,6 +78,17 @@ connection.open()
 append_event = (event) ->
     console.log('adding ' +  event)
     events.push(event)
+    
+
+
+process_incoming = () ->
+    #console.log('processing incoming')
+    for event in incoming_events
+        console.log(event)
+        if event['args'][0]['t'] == 'draw'
+            draw(event['args'][0]['coords']['x'], event['args'][0]['coords']['y'])
+    incoming_events = []
+
 
 tick = () ->
     if events.length != 0
@@ -82,6 +96,7 @@ tick = () ->
     for event in events
         send(event)
     events = []
+    process_incoming()
     # Schedule this.tick to be invoked again
     # in 16 milliseconds (around 60 ticks per second).
     setTimeout(tick, 16);
