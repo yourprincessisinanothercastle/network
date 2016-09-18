@@ -1,0 +1,145 @@
+{
+  "version": 2,
+  "workers": [
+    {
+      "type": "router",
+      "options": {
+        "pythonpath": [
+          ".."
+        ]
+      },
+      "realms": [
+        {
+          "name": "realm1",
+          "roles": [
+            {
+              "name": "authenticator",
+              "permissions": [
+                {
+                  "uri": "com.game.authenticate",
+                  "match": "exact",
+                  "allow": {
+                    "call": false,
+                    "register": true,
+                    "publish": false,
+                    "subscribe": false
+                  },
+                  "disclose": {
+                    "caller": false,
+                    "publisher": false
+                  },
+                  "cache": true
+                }
+              ]
+            },
+            {
+              "name": "authorizer",
+              "permissions": [
+                {
+                  "uri": "com.game.authorize",
+                  "allow": {
+                    "register": true
+                  }
+                }
+              ]
+            },
+            {
+              "name": "backend",
+              "permissions": [
+                {
+                  "uri": "",
+                  "match": "prefix",
+                  "allow": {
+                    "call": true,
+                    "register": true,
+                    "publish": true,
+                    "subscribe": true
+                  },
+                  "disclose": {
+                    "caller": false,
+                    "publisher": false
+                  },
+                  "cache": true
+                }
+              ]
+            },
+            {
+              "name": "gameloop",
+              "permissions": [
+                {
+                  "uri": "",
+                  "match": "prefix",
+                  "allow": {
+                    "call": true,
+                    "register": true,
+                    "publish": true,
+                    "subscribe": true
+                  },
+                  "disclose": {
+                    "caller": false,
+                    "publisher": false
+                  },
+                  "cache": true
+                }
+              ]
+            },
+            {
+              "name": "frontend",
+              "authorizer": "com.game.authorize"
+            }
+          ]
+        }
+      ],
+      "transports": [
+        {
+          "type": "web",
+          "endpoint": {
+            "type": "tcp",
+            "port": 8080
+          },
+          "paths": {
+            "/": {
+              "type": "static",
+              "directory": "../web"
+            },
+            "ws": {
+              "type": "websocket",
+              "auth": {
+                "wampcra": {
+                  "type": "dynamic",
+                  "authenticator": "com.game.authenticate"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "components": [
+        {
+          "type": "class",
+          "classname": "authenticator.AuthenticatorSession",
+          "realm": "realm1",
+          "role": "authenticator"
+        },
+        {
+          "type": "class",
+          "classname": "backend.BackendSession",
+          "realm": "realm1",
+          "role": "backend"
+        },
+        {
+          "type": "class",
+          "classname": "gameloop.GameLoopSession",
+          "realm": "realm1",
+          "role": "gameloop"
+        },
+        {
+          "type": "class",
+          "classname": "authorizer.UserAuthorizer",
+          "realm": "realm1",
+          "role": "authorizer"
+        }
+      ]
+    }
+  ]
+}
