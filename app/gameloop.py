@@ -1,6 +1,14 @@
 from autobahn.twisted.wamp import ApplicationSession
+from autobahn.wamp.types import SubscribeOptions
+
 from twisted.internet.defer import inlineCallbacks
 
+from time import sleep
+
+events = []
+active_rooms = {
+    # (0,0): room_object
+}
 
 class GameLoopSession(ApplicationSession):
 
@@ -8,14 +16,13 @@ class GameLoopSession(ApplicationSession):
     def onJoin(self, details):
         print("gameloop session joined: {}".format(details))
 
-        def userevent(msg):
-            print('userevent on {}: {}!'.format(topic, msg))
-
+        def userevent(msg, details=None):
+            events.append({'user': details.topic.split('.')[-1], 'msg': msg})
+            print('userevent on {}: {} ({})!'.format(details.topic.split('.')[-1], msg, details))
         try:
-            topic = u'com.game.user'
-            yield self.subscribe(userevent, topic)
+            topic = u'com.game.events'
+            yield self.subscribe(userevent, topic, options=SubscribeOptions(match=u"prefix", details_arg="details"))
             print('subscribed ' + topic)
 
         except Exception as e:
             print('something wrong while subscribing! %s' % e)
-

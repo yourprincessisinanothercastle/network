@@ -67,7 +67,7 @@
               "name": "gameloop",
               "permissions": [
                 {
-                  "uri": "",
+                  "uri": "com.game.events",
                   "match": "prefix",
                   "allow": {
                     "call": true,
