@@ -1,0 +1,3 @@
+[submodule "app/worldmap"]
+	path = app/worldmap
+	url = https://bitbucket.org/gamedevnstuff/worldmap.git

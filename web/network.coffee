@@ -7,12 +7,22 @@ key = "123";
 connected = false
 s = false
 
-events = []
-incoming_events = []
+# list of local events to send to the server
+# will be set to [] after sending
+local_events = []
+
+# to store state of the room
+room_data = {
+    # id: data
+}
+
+# puffer to store events for a room
+# gets merged to room_data as often as possible
+room_events = {
+    # id: []
+}
 
 onchallenge = (session, method, extra) ->
-        #console.log("onchallenge", method, extra);
-
         if (method == "wampcra")
             console.log("onchallenge: authenticating via '" + method + "' and challenge '" + extra.challenge + "'");
 
@@ -41,20 +51,39 @@ connection = new autobahn.Connection({
     onchallenge: onchallenge
 });
 
+add_room_events = (args, kwargs, details) ->
+    """
+    callback for the specific room events
+    """
+    #console.log('incoming event...: ' + args)
+    room_events[room_id].push({args, kwargs, details})
+
+set_room_data = (room_id, data) ->
+    """
+    set the room data for a joined room.
+    """
+    rooms[room_id] = data
+
+
+join_room = (room_id, data) ->
+    """
+    let this client join a room
+    called via rpc from the server.
+
+    subscribes to the room events,
+    sets room data
+    """
+    set_room_data(room_id, data)
+    session.subscribe('com.game.rooms.' + room_id, add_room_events)
 
 
 connection.onopen = (session, details) ->
-
     console.log("connected session with ID " + session.id);
     console.log("authenticated using method '" + details.authmethod + "' and provider '" + details.authprovider + "'");
     console.log("authenticated with authid '" + details.authid + "' and authrole '" + details.authrole + "'");
     connected = true
     s = session
-    console.log(session.subscribe('com.game.rooms.0.0',
-        (args, kwargs, details) ->
-            #console.log('incoming event...: ' + args)
-            incoming_events.push({args, kwargs, details})
-            return))
+    session.register('com.game.join_room.' + user, join_room)  # RPC: backend can set room data on client
     return
 
 connection.onclose = (reason, details) ->
@@ -79,27 +108,3 @@ append_event = (event) ->
     #console.log('adding ' +  event)
     events.push(event)
     
-
-
-process_incoming = () ->
-    #console.log('processing incoming')
-    for event in incoming_events
-        console.log(event)
-        if event['args'][0]['t'] == 'draw'
-            draw(event['args'][0]['coords']['x'], event['args'][0]['coords']['y'])
-    incoming_events = []
-
-
-tick = () ->
-    if events.length != 0
-        console.log('sending ' + events.length + ' events')
-    for event in events
-        send(event)
-    events = []
-    process_incoming()
-    # Schedule this.tick to be invoked again
-    # in 16 milliseconds (around 60 ticks per second).
-    setTimeout(tick, 16);
-
-
-tick()

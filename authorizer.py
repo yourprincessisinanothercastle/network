@@ -21,6 +21,10 @@ class UserAuthorizer(ApplicationSession):
             {
                 "action": 'subscribe',
                 "uri": "com.game.rooms.0.0"
+            },
+            {
+                "action": 'call',
+                "uri": "com.game.get_voronoi"
             }
         ]
         for rule in allowed:

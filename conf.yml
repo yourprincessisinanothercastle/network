@@ -1,0 +1,10 @@
+default:
+  mongodb: 'mongodb://localhost:27017/worldmap'
+
+develop:
+  mongodb: 'mongodb://localhost:27017/worldmap'
+
+testing:
+  mongodb: 'mongodb://localhost:27017/tests'
+
+
