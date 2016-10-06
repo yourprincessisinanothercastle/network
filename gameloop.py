@@ -6,7 +6,11 @@ from autobahn.twisted.util import sleep
 
 import config
 
-from models.world import get_world
+from worldmap.world import get_world
+from worldmap import db
+
+world_name = 'test16'
+
 
 class GameLoopSession(ApplicationSession):
     @inlineCallbacks
@@ -18,7 +22,7 @@ class GameLoopSession(ApplicationSession):
             # username: player_object
         }
 
-        world = get_world('test2', 321, 64, 2)
+        world = get_world(world_name, 321, 8, 8)
 
         # inline defined network-related methods
         # - subscribe to all player events
@@ -34,14 +38,25 @@ class GameLoopSession(ApplicationSession):
         except Exception as e:
             print('something wrong while subscribing! %s' % e)
 
-
         def get_voronoi(x, y):
             v = world.get_voronoi(x, y)
             return {'shape': v.shape,
                     'biome': v.biome,
-                    'neighbors': [[n.x_on_tilemap, n.y_on_tilemap] for n in v.neighbors]
+                    'neighbors': [[n.x_on_tilemap, n.y_on_tilemap] for n in v.neighbors],
+                    "x_on_tilemap": x,
+                    "y_on_tilemap": y,
+                    "height": v.height
                     }
-        self.register(get_voronoi, 'com.game.get_voronoi')
 
-        while True:
-            yield sleep(1 / 60)
+        def bulk_get_voronoi(tuples):
+            voronois = []
+            for t in tuples:
+                voronois.append(get_voronoi(t[0], t[1]))
+            return voronois
+
+        self.register(get_voronoi, 'com.game.get_voronoi')
+        self.register(bulk_get_voronoi, 'com.game.bulk_get_voronoi')
+
+    def onClose(self, wasClean):
+        print('deleting world')
+        db.drop_database(world_name)

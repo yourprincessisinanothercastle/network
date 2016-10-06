@@ -70,3 +70,5 @@ class BackendSession(ApplicationSession):
             print("procedure add2() registered")
         except Exception as e:
             print("could not register procedure: {}".format(e))
+
+

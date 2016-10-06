@@ -13,103 +13,148 @@ local_events = []
 
 # to store state of the room
 room_data = {
-    # id: data
+# id: data
 }
 
 # puffer to store events for a room
 # gets merged to room_data as often as possible
 room_events = {
-    # id: []
+# id: []
 }
 
 COLORS = {
-    "snow":                         "rgb(255,255,255)",
-    "tundra":                       "rgb(221,221,187)",
-    "bare":                         "rgb(187,187,187)",
-    "scorched":                     "rgb(153,153,153)",
-    "taiga":                        "rgb(204,212,187)",
-    "shrubland":                    "rgb(196,204,187)",
-    "temperate_desert":             "rgb(228,232,202)",
-    "temperate_rain_forest":        "rgb(164,196,168)",
-    "temperate_deciduous_forest":   "rgb(180,201,169)",
-    "grassland":                    "rgb(196,212,170)",
-    "subtropical_desert":           "rgb(233,221,199)",
-    "temperate desert":             "rgb(228,232,202)",
-    "tropical_rainforest":          "rgb(156,187,169)",
-    "tropical_seasonal_forest":     "rgb(169,204,164)",
-    "ice":                          "rgb(30,250,250)",
-    "water":                        "rgb(0,100,250)"
+  "snow": "rgb(240,240,240)",
+  "tundra": "rgb(221,221,187)",
+  "bare": "rgb(187,187,187)",
+  "scorched": "rgb(153,153,153)",
+  "taiga": "rgb(204,212,187)",
+  "shrubland": "rgb(196,204,187)",
+  "temperate_desert": "rgb(228,232,202)",
+  "temperate_rain_forest": "rgb(164,196,168)",
+  "temperate_deciduous_forest": "rgb(180,201,169)",
+  "grassland": "rgb(196,212,170)",
+  "subtropical_desert": "rgb(233,221,199)",
+  "temperate desert": "rgb(228,232,202)",
+  "tropical_rainforest": "rgb(156,187,169)",
+  "tropical_seasonal_forest": "rgb(169,204,164)",
+  "ice": "rgb(30,250,250)",
+  "water": "rgb(0,100,250)"
 }
 
 onchallenge = (session, method, extra) ->
-        if (method == "wampcra")
-            console.log("onchallenge: authenticating via '" + method + "' and challenge '" + extra.challenge + "'");
+  if (method == "wampcra")
+    console.log("onchallenge: authenticating via '" + method + "' and challenge '" + extra.challenge + "'");
 
-            return autobahn.auth_cra.sign(key, extra.challenge);
-        else
-            throw "don't know how to authenticate using '" + method + "'";
+    return autobahn.auth_cra.sign(key, extra.challenge);
+  else
+    throw "don't know how to authenticate using '" + method + "'";
 
 wsuri = ''
 if (document.location.origin == "file://")
-    wsuri = "ws://127.0.0.1:8080/ws";
+  wsuri = "ws://127.0.0.1:8080/ws";
 else
-    if document.location.protocol == "http:"
-        protocol = 'ws:'
-    else
-        protocol = 'wss:'
-    wsuri = protocol + "//" + document.location.host + "/ws";
+  if document.location.protocol == "http:"
+    protocol = 'ws:'
+  else
+    protocol = 'wss:'
+  wsuri = protocol + "//" + document.location.host + "/ws";
 
 connection = new autobahn.Connection({
-    url: wsuri,
-    realm: 'realm1',
+  url: wsuri,
+  realm: 'realm1',
 
-    # the following attributes must be set of WAMP-CRA authentication
-    #
-    authmethods: ["wampcra"],
-    authid: user,
-    onchallenge: onchallenge
+# the following attributes must be set of WAMP-CRA authentication
+#
+  authmethods: ["wampcra"],
+  authid: user,
+  onchallenge: onchallenge
 });
 
-offset = 250
+offset = 600
 
-draw_polygon = (coords, biome) ->
-    p = new Path2D();
-    p.moveTo(coords[0][0]+offset, coords[0][1]+offset)
-    for coord in coords
-      p.lineTo(coord[0]+offset, coord[1]+offset)
-    p.lineTo(coords[0][0]+offset, coords[0][1]+offset)
-    ctx.fillStyle   = COLORS[biome]
-    console.log(COLORS[biome])
-    ctx.stroke()
-    ctx.fill(p)
-    p.closePath()
 
-drawn_tiles = 0
-tiles_to_draw = 100
+draw_polygon = (voronoi) ->
+  coords = voronoi.shape
+  max_height = 5
+  step = parseInt(255 / max_height)
+
+  p = new Path2D();
+  p.moveTo(coords[0][0] + offset, coords[0][1] + offset)
+  for coord in coords
+    p.lineTo(coord[0] + offset, coord[1] + offset)
+  p.lineTo(coords[0][0] + offset, coords[0][1] + offset)
+  val = step * parseInt(voronoi.height)
+
+  #console.log(r)
+  ctx.fillStyle = COLORS[voronoi.biome] #'rgb(' + r + ',' + g + ',' + b + ')'
+  if voronoi.x_on_tilemap == 0 and voronoi.y_on_tilemap == 0
+    ctx.fillStyle = 'red'
+  #console.log(COLORS[biome])
+  ctx.stroke()
+  ctx.fill(p)
+  p.closePath()
+
 
 drawn = []
 
-get_and_draw = (x, y) ->
+all_dicts = []
 
-  if R.indexOf([x, y], drawn) < 0
-    drawn.push([x, y])
-    s.call('com.game.get_voronoi', [x, y]).then(
-      (voronoi) ->
-        console.log("vor:", voronoi)
-        draw_polygon(voronoi.shape, voronoi.biome)
-        drawn_tiles += 1
-        for n in voronoi.neighbors
-          if tiles_to_draw > drawn_tiles
-            console.log('next...')
-            get_and_draw(n[0], n[1])
-        return
-    ,
-      (error) ->
-        console.log("Call failed:", error)
+#get_and_draw = (tuples) ->
+#  """
+#  tuples: list of lists of x and y on tilemap
+#  """
+#  for tuple in tuples
+#    [x, y] = tuple
+#    console.log(x, y)
+#
+#    if R.indexOf([x, y], drawn) < 0
+#      drawn.push([x, y])
+#      s.call('com.game.get_voronoi', [x, y]).then(
+#        (voronoi) ->
+#          all_dicts.push(voronoi)
+#        ,
+#        (error) ->
+#          console.log("Call failed:", error)
+#      )
+#    else
+#      console.log(x, y, ' already drawn')
+#  return
+
+draw_all = () ->
+  for voronoi in all_dicts
+    draw_polygon(voronoi, voronoi.height)
+
+bulk_get_voronoi = (tuples) ->
+  console.log('requesting ' + tuples.length + 'voronoi cells')
+  chunksize = 50
+  chunks = []
+  while (tuples.length > 0)
+      chunks.push(tuples.splice(0, chunksize));
+
+  for chunk in chunks
+    console.log('calling for chunk')
+    s.call('com.game.bulk_get_voronoi', [chunk]).then(
+        (voronois) ->
+          console.log(voronois)
+          for v in voronois
+            all_dicts.push(v)
+            drawn.push([v.x_on_tile, v.y_on_tile])
+            #console.log('drawing...')
+            draw_all()
+          return
+        ,
+        (error) ->
+          console.log("Call failed:", error)
     )
-  else
-    console.log(drawn)
-    console.log([x, y] + ' already drawn')
+
+
+range_x = [-30, 31]
+range_y = [-30, 31]
+
+to_fetch = []
+for x in [range_x[0]...range_x[1]] by 1
+  for y in [range_y[0]...range_y[1]] by 1
+    to_fetch.push([x, y])
 
 
 connection.onopen = (session, details) ->
@@ -119,19 +164,15 @@ connection.onopen = (session, details) ->
   connected = true
   s = session
 
-  get_and_draw(0, 0)
+  bulk_get_voronoi(to_fetch)
 
   return
-
 
 
 connection.onclose = (reason, details) ->
   console.log("disconnected", reason, details.reason, details);
   connected = false
   return
-
-
-
 
 
 ctx = canvas.getContext('2d');

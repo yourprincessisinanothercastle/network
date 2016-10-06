@@ -110,6 +110,21 @@
                     "publisher": true
                   },
                   "cache": true
+                },
+                {
+                  "uri": "com.game.bulk_get_voronoi",
+                  "match": "exact",
+                  "allow": {
+                    "call": true,
+                    "register": true,
+                    "publish": true,
+                    "subscribe": true
+                  },
+                  "disclose": {
+                    "caller": false,
+                    "publisher": true
+                  },
+                  "cache": true
                 }
               ]
             },

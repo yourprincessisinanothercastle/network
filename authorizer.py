@@ -25,6 +25,10 @@ class UserAuthorizer(ApplicationSession):
             {
                 "action": 'call',
                 "uri": "com.game.get_voronoi"
+            },
+            {
+                "action": 'call',
+                "uri": "com.game.bulk_get_voronoi"
             }
         ]
         for rule in allowed:
