@@ -37,9 +37,9 @@ COLORS = {
 };
 
 onchallenge = function(session, method, extra) {
-  if (method === "wampcra") {
+  if (method === "ticket") {
     console.log("onchallenge: authenticating via '" + method + "' and challenge '" + extra.challenge + "'");
-    return autobahn.auth_cra.sign(key, extra.challenge);
+    return key;
   } else {
     throw "don't know how to authenticate using '" + method + "'";
   }
@@ -61,7 +61,7 @@ if (document.location.origin === "file://") {
 connection = new autobahn.Connection({
   url: wsuri,
   realm: 'realm1',
-  authmethods: ["wampcra"],
+  authmethods: ["ticket"],
   authid: user,
   onchallenge: onchallenge
 });
@@ -71,6 +71,7 @@ offset = 600;
 draw_polygon = function(voronoi) {
   var coord, coords, i, len, max_height, p, step, val;
   coords = voronoi.shape;
+  ctx.strokeStyle = '#000000';
   max_height = 5;
   step = parseInt(255 / max_height);
   p = new Path2D();

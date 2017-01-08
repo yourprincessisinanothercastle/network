@@ -3,11 +3,14 @@ import os
 import logging
 import sys
 
+base_path = os.path.dirname(__file__)
+print(base_path)
+
 logger = logging.getLogger(__name__)
 
 config = {}
 
-path = '../conf.yml'
+path = os.path.join(base_path, '..', 'conf.yml')
 
 mode = os.environ.get('WORLDMAP_MODE') or 'develop'
 

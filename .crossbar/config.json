@@ -129,7 +129,7 @@
               ]
             },
             {
-              "name": "frontend",
+              "name": "user",
               "authorizer": "com.game.authorize"
             }
           ]
@@ -150,7 +150,7 @@
             "ws": {
               "type": "websocket",
               "auth": {
-                "wampcra": {
+                "ticket": {
                   "type": "dynamic",
                   "authenticator": "com.game.authenticate"
                 }

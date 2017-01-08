@@ -42,10 +42,10 @@ COLORS = {
 }
 
 onchallenge = (session, method, extra) ->
-  if (method == "wampcra")
+  if (method == "ticket")
     console.log("onchallenge: authenticating via '" + method + "' and challenge '" + extra.challenge + "'");
 
-    return autobahn.auth_cra.sign(key, extra.challenge);
+    return key;
   else
     throw "don't know how to authenticate using '" + method + "'";
 
@@ -62,10 +62,7 @@ else
 connection = new autobahn.Connection({
   url: wsuri,
   realm: 'realm1',
-
-# the following attributes must be set of WAMP-CRA authentication
-#
-  authmethods: ["wampcra"],
+  authmethods: ["ticket"],
   authid: user,
   onchallenge: onchallenge
 });
@@ -75,6 +72,7 @@ offset = 600
 
 draw_polygon = (voronoi) ->
   coords = voronoi.shape
+  ctx.strokeStyle = '#000000';
   max_height = 5
   step = parseInt(255 / max_height)
 

@@ -6,10 +6,10 @@ from autobahn.twisted.util import sleep
 
 import config
 
-from worldmap.world import get_world
-from worldmap import db
+from models.worldmap.world import get_world
+from models import db
 
-world_name = 'test16'
+world_name = 'test22'
 
 
 class GameLoopSession(ApplicationSession):
@@ -22,7 +22,7 @@ class GameLoopSession(ApplicationSession):
             # username: player_object
         }
 
-        world = get_world(world_name, 321, 8, 8)
+        world = get_world(world_name, 32, 8, 16)
 
         # inline defined network-related methods
         # - subscribe to all player events
